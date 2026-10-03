@@ -80,8 +80,7 @@ protected:
         std::string context = "Existing objects (uniqueID, objectID, x, y):\n";
         if (auto editor = LevelEditorLayer::get()) {
             auto objects = editor->getAllObjects();
-            CCARRAY_FOREACH(objects, node) {
-                auto object = typeinfo_cast<GameObject*>(node);
+            for (auto object : CCArrayExt<GameObject*>(objects)) {
                 if (!object) continue;
                 context += fmt::format("{}, {}, {:.1f}, {:.1f}\n", object->m_uniqueID, object->m_objectID, object->getPositionX(), object->getPositionY());
                 if (context.size() > 12000) break;
