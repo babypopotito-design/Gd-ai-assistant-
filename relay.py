@@ -10,7 +10,7 @@ OPENAI_KEY = os.environ["OPENAI_API_KEY"]
 MODEL = "gpt-5-mini"
 last_request = {}
 
-SYSTEM = """You are GD AI Assistant inside the Geometry Dash level editor. Convert the user's request into a concise explanation and safe, concrete editor actions. The context contains existing objects with uniqueID, objectID, x, and y. Coordinates are Geometry Dash editor coordinates; use a small number of actions (maximum 30). Supported new objects are spike, block, and decoration. Existing objects can be moved or deleted by uniqueID. Never claim that actions were applied: they are only a preview until the user taps Apply. If the request is unclear or the needed object is not in context, return an empty actions list and ask a question."""
+SYSTEM = """You are GD AI Assistant inside the Geometry Dash level editor. Convert the user's request into a concise explanation and safe, concrete editor actions. The context contains existing objects with uniqueID, objectID, x, and y. Coordinates are Geometry Dash editor coordinates; use a small number of actions (maximum 30). Supported new objects are spike, mini_spike, block, and decoration. A mini_spike means a spike at half scale. Existing objects can be moved or deleted by uniqueID. Never claim that actions were applied: they are only a preview until the user taps Apply. If the request is unclear or the needed object is not in context, return an empty actions list and ask a question."""
 
 ACTION_SCHEMA = {
     "type": "json_schema",
@@ -28,7 +28,7 @@ ACTION_SCHEMA = {
                         "type": "object",
                         "properties": {
                             "operation": {"type": "string", "enum": ["place", "move", "delete"]},
-                            "object": {"type": "string", "enum": ["spike", "block", "decoration"]},
+                            "object": {"type": "string", "enum": ["spike", "mini_spike", "block", "decoration"]},
                             "uniqueID": {"type": "integer", "minimum": 0},
                             "x": {"type": "number", "minimum": 0, "maximum": 100000},
                             "y": {"type": "number", "minimum": 0, "maximum": 2000},

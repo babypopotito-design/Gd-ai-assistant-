@@ -129,13 +129,18 @@ protected:
                 auto typeName = type.unwrap().asString().unwrapOr("");
                 auto operationName = operation.unwrap().asString().unwrapOr("place");
                 int objectID = typeName == "spike" ? 8 : 1;
+                auto requestedScale = static_cast<float>(scale.unwrap().asDouble().unwrapOr(1.0));
+                if (typeName == "mini_spike") {
+                    objectID = 8;
+                    requestedScale *= .5f;
+                }
                 self->m_actions.push_back({
                     operationName,
                     static_cast<int>(uniqueID.unwrap().asInt().unwrapOr(0)),
                     objectID,
                     static_cast<float>(x.unwrap().asDouble().unwrapOr(0.0)),
                     static_cast<float>(y.unwrap().asDouble().unwrapOr(150.0)),
-                    static_cast<float>(scale.unwrap().asDouble().unwrapOr(1.0)),
+                    requestedScale,
                     static_cast<float>(rotation.unwrap().asDouble().unwrapOr(0.0))
                 });
             }
