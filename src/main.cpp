@@ -54,7 +54,7 @@ protected:
 
         m_status->setString("Thinking...");
         auto body = matjson::Value();
-        body["prompt"] = prompt;
+        body["prompt"] = matjson::Value(prompt.c_str());
         auto req = web::WebRequest();
         req.bodyJSON(body);
         req.header("Content-Type", "application/json");
@@ -70,7 +70,12 @@ protected:
                 self->m_status->setString("The AI returned an invalid response.");
                 return;
             }
-            auto reply = json.unwrap().get("reply").asString();
+            auto replyValue = json.unwrap().get("reply");
+            if (!replyValue) {
+                self->m_status->setString("The AI returned no text.");
+                return;
+            }
+            auto reply = replyValue.unwrap().asString();
             self->m_status->setString(reply.empty() ? "The AI returned no text." : reply);
         });
     }
