@@ -106,13 +106,11 @@ protected:
                 return;
             }
             for (auto const& value : array.unwrap()) {
-                auto object = value.asObject();
-                if (!object) continue;
-                auto type = object.unwrap().get("object");
-                auto x = object.unwrap().get("x");
-                auto y = object.unwrap().get("y");
-                auto scale = object.unwrap().get("scale");
-                auto rotation = object.unwrap().get("rotation");
+                auto type = value.get("object");
+                auto x = value.get("x");
+                auto y = value.get("y");
+                auto scale = value.get("scale");
+                auto rotation = value.get("rotation");
                 if (!type || !x || !y || !scale || !rotation) continue;
                 auto typeName = type.unwrap().asString().unwrapOr("");
                 int objectID = typeName == "spike" ? 8 : 1;
