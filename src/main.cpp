@@ -8,6 +8,8 @@ using namespace geode::prelude;
 static constexpr char kRelayURL[] = "https://8080-i19ilsqpehq6phaakir54-ce454132.us3.manus.computer/assist";
 
 struct EditorAction {
+    std::string operation;
+    int uniqueID;
     int objectID;
     float x;
     float y;
@@ -75,6 +77,17 @@ protected:
         m_preview->setString("Waiting for an AI plan...");
         auto body = matjson::Value();
         body["prompt"] = matjson::Value(prompt.c_str());
+        std::string context = "Existing objects (uniqueID, objectID, x, y):\n";
+        if (auto editor = LevelEditorLayer::get()) {
+            auto objects = editor->getAllObjects();
+            CCARRAY_FOREACH(objects, node) {
+                auto object = typeinfo_cast<GameObject*>(node);
+                if (!object) continue;
+                context += fmt::format("{}, {}, {:.1f}, {:.1f}\n", object->m_uniqueID, object->m_objectID, object->getPositionX(), object->getPositionY());
+                if (context.size() > 12000) break;
+            }
+        }
+        body["context"] = matjson::Value(context.c_str());
         auto req = web::WebRequest();
         req.bodyJSON(body);
         req.header("Content-Type", "application/json");
@@ -107,14 +120,19 @@ protected:
             }
             for (auto const& value : array.unwrap()) {
                 auto type = value.get("object");
+                auto operation = value.get("operation");
+                auto uniqueID = value.get("uniqueID");
                 auto x = value.get("x");
                 auto y = value.get("y");
                 auto scale = value.get("scale");
                 auto rotation = value.get("rotation");
-                if (!type || !x || !y || !scale || !rotation) continue;
+                if (!type || !operation || !uniqueID || !x || !y || !scale || !rotation) continue;
                 auto typeName = type.unwrap().asString().unwrapOr("");
+                auto operationName = operation.unwrap().asString().unwrapOr("place");
                 int objectID = typeName == "spike" ? 8 : 1;
                 self->m_actions.push_back({
+                    operationName,
+                    static_cast<int>(uniqueID.unwrap().asInt().unwrapOr(0)),
                     objectID,
                     static_cast<float>(x.unwrap().asDouble().unwrapOr(0.0)),
                     static_cast<float>(y.unwrap().asDouble().unwrapOr(150.0)),
@@ -133,6 +151,21 @@ protected:
             return;
         }
         for (auto const& action : m_actions) {
+            if (action.operation == "delete") {
+                if (auto object = editor->findGameObject(action.uniqueID)) {
+                    editor->removeObject(object, false);
+                }
+                continue;
+            }
+            if (action.operation == "move") {
+                if (auto object = editor->findGameObject(action.uniqueID)) {
+                    object->setPosition({action.x, action.y});
+                    object->setRotation(action.rotation);
+                    object->setScale(action.scale);
+                    editor->objectMoved(object);
+                }
+                continue;
+            }
             auto object = editor->createObject(action.objectID, {action.x, action.y}, false);
             if (object) {
                 object->setScale(action.scale);
