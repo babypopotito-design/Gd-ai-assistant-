@@ -3,17 +3,24 @@
 
 using namespace geode::prelude;
 
-class AssistantPopup final : public Popup<> {
+class AssistantPopup final : public Popup {
 protected:
     TextInput* m_prompt = nullptr;
     CCLabelBMFont* m_status = nullptr;
 
-    bool setup() override {
+    bool init() {
+        if (!Popup::init(360.f, 220.f)) return false;
         this->setTitle("GD AI Assistant");
 
         m_prompt = TextInput::create(270.f, "Tell me what to build...");
         m_prompt->setID("prompt-input");
         m_mainLayer->addChildAtPosition(m_prompt, Anchor::Center, {0.f, 28.f});
+
+        auto menu = CCMenu::create();
+        menu->setContentSize({360.f, 40.f});
+        menu->setPosition({180.f, 82.f});
+        menu->setID("assistant-actions");
+        m_mainLayer->addChild(menu);
 
         auto send = CCMenuItemSpriteExtra::create(
             ButtonSprite::create("Ask", "goldFont.fnt", "GJ_button_01.png", .8f),
@@ -21,7 +28,7 @@ protected:
             menu_selector(AssistantPopup::onAsk)
         );
         send->setID("ask-button");
-        m_buttonMenu->addChildAtPosition(send, Anchor::Center, {0.f, -18.f});
+        menu->addChildAtPosition(send, Anchor::Center);
 
         m_status = CCLabelBMFont::create(
             "Preview mode: connect an endpoint in mod settings.",
@@ -51,7 +58,7 @@ protected:
 public:
     static AssistantPopup* create() {
         auto ret = new AssistantPopup();
-        if (ret && ret->initAnchored(360.f, 220.f)) {
+        if (ret && ret->init()) {
             ret->autorelease();
             return ret;
         }
