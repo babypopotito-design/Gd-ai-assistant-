@@ -76,3 +76,7 @@ Android/media/com.geode.launcher/game/geode/mods/
 ```
 
 Then restart Geometry Dash through the Geode Android Launcher and enable the mod in the Geode menu. If the phone is an older 32-bit Android device, use `geode build -p android32` instead.
+
+## Live AI relay
+
+The Android build calls the configured HTTPS relay and keeps the model credential off the phone. The relay accepts short prompts, applies basic rate limiting, and returns text guidance. The current build displays the answer in the popup; it does not yet place objects automatically.

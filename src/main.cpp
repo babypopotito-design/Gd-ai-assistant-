@@ -1,12 +1,16 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/LevelEditorLayer.hpp>
+#include <Geode/utils/web.hpp>
 
 using namespace geode::prelude;
+
+static constexpr char kRelayURL[] = "https://8080-i19ilsqpehq6phaakir54-ce454132.us3.manus.computer/assist";
 
 class AssistantPopup final : public Popup {
 protected:
     TextInput* m_prompt = nullptr;
     CCLabelBMFont* m_status = nullptr;
+    async::TaskHolder<web::WebResponse> m_listener;
 
     bool init() {
         if (!Popup::init(360.f, 220.f)) return false;
@@ -48,11 +52,27 @@ protected:
             return;
         }
 
-        // Safe first milestone: prove the editor UI flow without embedding
-        // an API key in the mod. Network integration will call a user-owned
-        // HTTPS relay configured through the mod setting.
-        m_status->setString("Instruction received. AI relay is not connected yet.");
-        log::info("GD AI Assistant prompt: {}", prompt);
+        m_status->setString("Thinking...");
+        auto body = matjson::Value();
+        body["prompt"] = prompt;
+        auto req = web::WebRequest();
+        req.bodyJSON(body);
+        req.header("Content-Type", "application/json");
+        req.timeout(std::chrono::seconds(45));
+        auto self = Ref(this);
+        m_listener.spawn(req.post(kRelayURL), [self](web::WebResponse res) {
+            if (!res.ok()) {
+                self->m_status->setString("The AI relay could not be reached.");
+                return;
+            }
+            auto json = res.json();
+            if (!json) {
+                self->m_status->setString("The AI returned an invalid response.");
+                return;
+            }
+            auto reply = json.unwrap().get("reply").asString();
+            self->m_status->setString(reply.empty() ? "The AI returned no text." : reply);
+        });
     }
 
 public:
