@@ -76,7 +76,11 @@ protected:
                 return;
             }
             auto reply = replyValue.unwrap().asString().unwrapOr("");
-            self->m_status->setString(reply.empty() ? "The AI returned no text." : reply);
+            if (reply.empty()) {
+                self->m_status->setString("The AI returned no text.");
+            } else {
+                self->m_status->setString(reply.c_str());
+            }
         });
     }
 
