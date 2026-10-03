@@ -75,7 +75,7 @@ protected:
                 self->m_status->setString("The AI returned no text.");
                 return;
             }
-            auto reply = replyValue.unwrap().asString();
+            auto reply = replyValue.unwrap().asString().unwrapOr("");
             self->m_status->setString(reply.empty() ? "The AI returned no text." : reply);
         });
     }
