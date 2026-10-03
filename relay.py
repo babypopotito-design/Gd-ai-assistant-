@@ -10,7 +10,39 @@ OPENAI_KEY = os.environ["OPENAI_API_KEY"]
 MODEL = "gpt-5-mini"
 last_request = {}
 
-SYSTEM = """You are GD AI Assistant inside the Geometry Dash level editor. Be concise and useful. The current prototype can display text responses but cannot yet place objects automatically. Give practical editor instructions and suggest safe, specific next steps. Never claim that you changed the level."""
+SYSTEM = """You are GD AI Assistant inside the Geometry Dash level editor. Convert the user's request into a concise explanation and safe, concrete editor actions. Coordinates are Geometry Dash editor coordinates; use a small number of actions (maximum 30). Supported objects are spike, block, and decoration. Never claim that actions were applied: they are only a preview until the user taps Apply. If the request is unclear, return an empty actions list and ask a question."""
+
+ACTION_SCHEMA = {
+    "type": "json_schema",
+    "json_schema": {
+        "name": "gd_editor_plan",
+        "strict": True,
+        "schema": {
+            "type": "object",
+            "properties": {
+                "message": {"type": "string"},
+                "actions": {
+                    "type": "array",
+                    "maxItems": 30,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "object": {"type": "string", "enum": ["spike", "block", "decoration"]},
+                            "x": {"type": "number", "minimum": 0, "maximum": 100000},
+                            "y": {"type": "number", "minimum": 0, "maximum": 2000},
+                            "scale": {"type": "number", "minimum": 0.25, "maximum": 4},
+                            "rotation": {"type": "number", "minimum": -360, "maximum": 360}
+                        },
+                        "required": ["object", "x", "y", "scale", "rotation"],
+                        "additionalProperties": False
+                    }
+                }
+            },
+            "required": ["message", "actions"],
+            "additionalProperties": False
+        }
+    }
+}
 
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, *_):
@@ -56,6 +88,7 @@ class Handler(BaseHTTPRequestHandler):
                 ],
                 "max_completion_tokens": 1000,
                 "reasoning": {"effort": "minimal"},
+                "response_format": ACTION_SCHEMA,
             }).encode()
             req = urllib.request.Request(
                 f"{OPENAI_BASE}/chat/completions",
@@ -69,7 +102,8 @@ class Handler(BaseHTTPRequestHandler):
             with urllib.request.urlopen(req, timeout=45) as response:
                 result = json.loads(response.read())
             text = result["choices"][0]["message"].get("content", "")
-            self.send_json(200, {"reply": text})
+            plan = json.loads(text)
+            self.send_json(200, plan)
         except Exception:
             self.send_json(502, {"error": "AI relay request failed"})
 
