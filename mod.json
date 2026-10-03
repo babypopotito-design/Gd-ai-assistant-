@@ -8,9 +8,9 @@
   "name": "GD AI Assistant",
   "developer": "Manus",
   "description": "An in-editor assistant prototype for Geometry Dash level creators.",
-  "repository": "https://github.com/babypopotito-design/gd-ai-assistant",
+  "repository": "https://github.com/babypopotito-design/Gd-ai-assistant-",
   "links": {
-    "source": "https://github.com/babypopotito-design/gd-ai-assistant"
+    "source": "https://github.com/babypopotito-design/Gd-ai-assistant-"
   },
   "tags": ["editor", "utility", "interface"],
   "settings": {
