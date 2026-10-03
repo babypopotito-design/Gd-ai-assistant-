@@ -90,11 +90,14 @@ protected:
         auto req = web::WebRequest();
         req.bodyJSON(body);
         req.header("Content-Type", "application/json");
+        req.header("User-Agent", "GD-AI-Assistant/1.0");
         req.timeout(std::chrono::seconds(45));
         auto self = Ref(this);
-        m_listener.spawn(req.post(kRelayURL), [self](web::WebResponse res) {
+        auto endpoint = Mod::get()->getSettingValue<std::string>("assistant-endpoint");
+        if (endpoint.empty()) endpoint = kRelayURL;
+        m_listener.spawn(req.post(endpoint), [self](web::WebResponse res) {
             if (!res.ok()) {
-                self->m_status->setString("The AI relay could not be reached.");
+                self->m_status->setString("Connection failed. Check Wi-Fi and the Assistant endpoint setting.");
                 return;
             }
             auto json = res.json();

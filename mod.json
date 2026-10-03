@@ -17,8 +17,8 @@
     "assistant-endpoint": {
       "type": "string",
       "name": "Assistant endpoint",
-      "description": "HTTPS endpoint used for AI requests. Leave blank for preview mode.",
-      "default": ""
+      "description": "HTTPS endpoint used for AI requests.",
+      "default": "https://8080-i19ilsqpehq6phaakir54-ce454132.us3.manus.computer/assist"
     }
   }
 }

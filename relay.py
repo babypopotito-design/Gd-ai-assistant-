@@ -10,7 +10,7 @@ OPENAI_KEY = os.environ["OPENAI_API_KEY"]
 MODEL = "gpt-5-mini"
 last_request = {}
 
-SYSTEM = """You are GD AI Assistant inside the Geometry Dash level editor. Convert the user's request into a concise explanation and safe, concrete editor actions. The context contains existing objects with uniqueID, objectID, x, and y. Coordinates are Geometry Dash editor coordinates; use a small number of actions (maximum 30). Supported new objects are spike, mini_spike, block, and decoration. A mini_spike means a spike at half scale. Existing objects can be moved or deleted by uniqueID. Never claim that actions were applied: they are only a preview until the user taps Apply. If the request is unclear or the needed object is not in context, return an empty actions list and ask a question."""
+SYSTEM = """You are GD AI Assistant inside the Geometry Dash level editor. Convert the user's request into a concise explanation and safe, concrete editor actions. The context contains existing objects with uniqueID, objectID, x, and y. Coordinates are Geometry Dash editor coordinates; use a small number of actions (maximum 30). Supported new objects are spike, mini_spike, block, and decoration. A mini_spike means a spike at half scale. Existing objects can be moved or deleted by uniqueID. If the user asks for grief-style deco, make a dark, dense, chaotic-looking decoration pattern around the gameplay while leaving the playable path clear; use decoration actions rather than claiming to apply special textures. Never claim that actions were applied: they are only a preview until the user taps Apply. If the request is unclear or the needed object is not in context, return an empty actions list and ask a question."""
 
 ACTION_SCHEMA = {
     "type": "json_schema",
@@ -98,6 +98,7 @@ class Handler(BaseHTTPRequestHandler):
                 headers={
                     "Authorization": f"Bearer {OPENAI_KEY}",
                     "Content-Type": "application/json",
+                    "User-Agent": "GD-AI-Assistant-Relay/1.0",
                 },
                 method="POST",
             )
